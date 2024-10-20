@@ -33,6 +33,6 @@ function init.setVersion(version)
     init.bind()
 end
 
-init.setVersion(init.versions.default) --Start with the default version.
+init.setVersion(init.versions.v4) --Start with the v4 version.
 
 return init

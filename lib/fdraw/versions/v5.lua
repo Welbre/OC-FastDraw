@@ -86,6 +86,7 @@ function op.free(index)
 end
 
 function op.fill(x, y, width, height, _char)
+    local log = io.open("/loga.txt", "w")
     char = string.byte(_char)
     local mem = vir_tree[selected_buff]
     local pixel_tree = get_CHARFOREBACK_pipeline(mem)
@@ -94,9 +95,11 @@ function op.fill(x, y, width, height, _char)
             local len = #pixel_tree
             pixel_tree[len + 1] = i
             pixel_tree[len + 2] = j
-            pixel_tree[len + 3] = char
+            log:write(string.format("(%d, %d)\n", i, j))
         end
     end
+
+    log:close()
 end
 
 function op.getRes()
@@ -189,7 +192,7 @@ function op.log()
     end
     log:close()
 end
-local block --= io.open("/block.txt", "w")
+local block = io.open("/block.txt", "w")
 local write = function(str)
     if block then block:write(str) end
 end
@@ -203,7 +206,6 @@ local function try_fill(pipeline, i)
     if not ((i + 3) <= #pipeline) then write("reach the end of pipe\n") flush() return nil, nil, nil, nil, i end -- check if reach the end of pipeline.
     local dirX, dirY = math.abs(pipeline[i+2] -x), math.abs(pipeline[i+3] -y)
     write("block dir " .. dirX .. " " .. dirY .. "\n")
-    --if math.sqrt(dirX ^ 2  + dirY ^ 2) <= 1 then write(string.format("Fail in the direction %d %d (i = %d) %s %s \n", dirX, dirY, i, dirX > 1,dirY > 1)) flush() return nil, nil, nil, nil, i end --Check the next pixel in the pipeline.
     if math.sqrt(dirX ^ 2  + dirY ^ 2) > 1 then write(string.format("Fail in the direction %d %d (i = %d) %s %s \n", dirX, dirY, i, dirX > 1,dirY > 1)) flush() return nil, nil, nil, nil, i end --Check the next pixel in the pipeline.
     i = i + 2 -- if reaches this line then the next pixel have been checked, so increment the index to the next one.
 
@@ -233,7 +235,7 @@ local function try_fill(pipeline, i)
 end
 
 function op.flush()
-    --op.log()
+    op.log()
     local buffer = getBuff()
     setBuff(selected_buff)
     local _fore, _back = fore, back
@@ -242,6 +244,7 @@ function op.flush()
         local __char, __fore, __back = string.char((CHARFOREBACK & 0xff0000) >> 16) ,((CHARFOREBACK & 0xFF00) >> 8) + 1, (CHARFOREBACK & 0xFF) + 1
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
+        write(string.format("CHARFOREBACK %s, 0x%x, 0x%x\n", __char, OCC[__fore], OCC[__back]))
         local i = 1
         while i <= #pipeline do
             local x, y, w, h, _i = try_fill(pipeline, i)
