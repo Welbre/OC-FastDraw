@@ -112,15 +112,27 @@ local function rgb24_to_occ_index(rgb24)
     local g = (rgb24 >> 8) & 0xFF  -- Green is the middle 8 bits
     local b = rgb24 & 0xFF         -- Blue is the low 8 bits
 
-    if (r == g) and (r == b) and (r > 0xf) and (r < 0xf0) then
-        return math.floor(240 + r * ((256-241) / (0xf0 - 0xf)))
-    else
-        -- Otherwise, map to the nearest red, green, and blue variants
-        local r_nearest = math.floor(r / 51 + 0.5) -- 255 / (red 5) -> 51
-        local g_nearest = math.floor(g / 36 + 0.5)
-        local b_nearest = math.floor(b / 64 + 0.5)
-        return (b_nearest + g_nearest*5 + r_nearest * 40) + 1
+
+    -- Otherwise, map to the nearest red, green, and blue variants
+    local r_nearest = math.floor(r / 51 + 0.5) -- 255 / (red 5) -> 51
+    local g_nearest = math.floor(g / 36 + 0.5)
+    local b_nearest = math.floor(b / 64 + 0.5)
+    local color = (b_nearest + g_nearest*5 + r_nearest * 40) + 1
+
+    local distance = math.huge
+    local best = -1
+    for i,v in pairs(gray_variants) do
+        local r_dis = math.abs(r-v)
+        local g_dis = math.abs(g-v)
+        local b_dis = math.abs(b-v)
+        local totalDis = (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
+        if totalDis < distance then distance = totalDis best = i end
     end
+    local r_dis = math.abs(r- ((OCC[color] & 0xff0000) >> 16))
+    local g_dis = math.abs(g- ((OCC[color] & 0xff00) >> 8))
+    local b_dis = math.abs(b- (OCC[color] & 0xff))
+    local totalDis = (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
+    if totalDis < distance then return color else return best + 240 end
 end
 
 function op.setf(color)
