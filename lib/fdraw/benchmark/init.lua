@@ -63,6 +63,7 @@ end
 --#############################################################################################
 --################################### Create all benchmarks ###################################
 --#############################################################################################
+fdraw.setVersion(fdraw.versions.default)
 newBench("Raw", nil, draws.raw_draw0, draws.raw_draw1, draws.raw_draw2, draws.raw_draw3, draws.raw_draw4, draws.raw_draw5)
 newBench("Default", asBufferDraw(fdraw.flushs.flush0), draws.draw0, draws.draw1, draws.draw2, draws.draw3, draws.draw4, draws.draw5)
 newBench("DefaultV1", asBufferDraw(fdraw.flushs.flush1), draws.draw0, draws.draw1, draws.draw2, draws.draw3, draws.draw4, draws.draw5)

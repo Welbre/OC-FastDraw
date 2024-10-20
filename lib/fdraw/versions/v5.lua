@@ -86,7 +86,6 @@ function op.free(index)
 end
 
 function op.fill(x, y, width, height, _char)
-    local log = io.open("/loga.txt", "w")
     char = string.byte(_char)
     local mem = vir_tree[selected_buff]
     local pixel_tree = get_CHARFOREBACK_pipeline(mem)
@@ -95,11 +94,8 @@ function op.fill(x, y, width, height, _char)
             local len = #pixel_tree
             pixel_tree[len + 1] = i
             pixel_tree[len + 2] = j
-            log:write(string.format("(%d, %d)\n", i, j))
         end
     end
-
-    log:close()
 end
 
 function op.getRes()
@@ -192,7 +188,7 @@ function op.log()
     end
     log:close()
 end
-local block = io.open("/block.txt", "w")
+local block --= io.open("/block.txt", "w")
 local write = function(str)
     if block then block:write(str) end
 end
@@ -235,7 +231,7 @@ local function try_fill(pipeline, i)
 end
 
 function op.flush()
-    op.log()
+    --op.log()
     local buffer = getBuff()
     setBuff(selected_buff)
     local _fore, _back = fore, back
