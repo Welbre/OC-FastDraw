@@ -107,32 +107,37 @@ function op.display(x, y, width, height, x0, y0)
     bitblt(0, x or 1, y or 1, width, height, selected_buff, x0 or 1, y0 or 1)
 end
 
+local function color_distance(r, g, b, r1, g1, b1)
+    local r_dis = math.abs(r-r1)
+    local g_dis = math.abs(g-g1)
+    local b_dis = math.abs(b-b1)
+    return (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
+end
+
 local function rgb24_to_occ_index(rgb24)
     local r = (rgb24 >> 16) & 0xFF -- Red is the high 8 bits
     local g = (rgb24 >> 8) & 0xFF  -- Green is the middle 8 bits
     local b = rgb24 & 0xFF         -- Blue is the low 8 bits
 
-
     -- Otherwise, map to the nearest red, green, and blue variants
-    local r_nearest = math.floor(r / 51 + 0.5) -- 255 / (red 5) -> 51
-    local g_nearest = math.floor(g / 36 + 0.5)
-    local b_nearest = math.floor(b / 64 + 0.5)
-    local color = (b_nearest + g_nearest*5 + r_nearest * 40) + 1
-
-    local distance = math.huge
-    local best = -1
-    for i,v in pairs(gray_variants) do
-        local r_dis = math.abs(r-v)
-        local g_dis = math.abs(g-v)
-        local b_dis = math.abs(b-v)
-        local totalDis = (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
-        if totalDis < distance then distance = totalDis best = i end
+    local r_nearest = math.floor((r * 5 / 255) + 0.5)
+    local g_nearest = math.floor((g * 7 / 255) + 0.5)
+    local b_nearest = math.floor((b * 4 / 255) + 0.5)
+    local color = (r_nearest * 40 + g_nearest*5 + b_nearest) + 1
+    local palletIndex = -1
+    do
+        local distance = math.huge
+        for i,v in pairs(gray_variants) do
+            local totalDis = color_distance(r, g, b, v, v, v)
+            if totalDis < distance then distance = totalDis palletIndex = i end
+        end
     end
-    local r_dis = math.abs(r- ((OCC[color] & 0xff0000) >> 16))
-    local g_dis = math.abs(g- ((OCC[color] & 0xff00) >> 8))
-    local b_dis = math.abs(b- (OCC[color] & 0xff))
-    local totalDis = (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
-    if totalDis < distance then return color else return best + 240 end
+    local rgb_nearest = OCC[color]
+    if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < color_distance(r, g, b, gray_variants[palletIndex], gray_variants[palletIndex], gray_variants[palletIndex]) then
+        return color
+    else
+        return palletIndex + 240
+    end
 end
 
 function op.setf(color)
