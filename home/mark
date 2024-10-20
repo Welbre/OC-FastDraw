@@ -1,0 +1,2 @@
+local ok, err = xpcall(require, function(er) return debug.traceback(er, 2) end, "fdraw/benchmark")
+if not ok then error(err, 0) end
