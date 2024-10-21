@@ -1,5 +1,5 @@
 local init = {
-    versions = {default = 0, v2 = 1, v3 = 2, v4 = 3, v5 = 4}
+    versions = {default = 0, v2 = 1, v3 = 2, v4 = 3, v5 = 4, v6 = 5}
 }
 local selected = nil
 
@@ -25,6 +25,8 @@ function init.setVersion(version)
         setmetatable(init, {__index = require("fdraw.versions.v4")})
     elseif version == 4 then
         setmetatable(init, {__index = require("fdraw.versions.v5")})
+    elseif version == 5 then
+        setmetatable(init, {__index = require("fdraw.versions.v6")})
     else
         error("Version " .. version .. " not finded!", 1)
     end

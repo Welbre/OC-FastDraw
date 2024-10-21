@@ -76,6 +76,8 @@ fdraw.setVersion(fdraw.versions.v4)
 newBench("V4", asBufferDraw(fdraw.flush), draws.draw0, draws.draw1, draws.draw2, draws.draw3, draws.draw4, draws.draw5)
 fdraw.setVersion(fdraw.versions.v5)
 newBench("V5", asBufferDraw(fdraw.flush), draws.draw0, draws.draw1, draws.draw2, draws.draw3, draws.draw4, draws.draw5)
+fdraw.setVersion(fdraw.versions.v6)
+newBench("V6", asBufferDraw(fdraw.flush), draws.draw0, draws.draw1, draws.draw2, draws.draw3, draws.draw4, draws.draw5)
 
 --#############################################################################################
 --################################### Plot definitions ########################################
