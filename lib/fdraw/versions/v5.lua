@@ -108,9 +108,9 @@ function op.display(x, y, width, height, x0, y0)
 end
 
 local function color_distance(r, g, b, r1, g1, b1)
-    local r_dis = math.abs(r-r1)
-    local g_dis = math.abs(g-g1)
-    local b_dis = math.abs(b-b1)
+    local r_dis = r-r1
+    local g_dis = g-g1
+    local b_dis = b-b1
     return (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
 end
 
@@ -124,19 +124,17 @@ local function rgb24_to_occ_index(rgb24)
     local g_nearest = math.floor((g * 0.027450980392) + 0.5)
     local b_nearest = math.floor((b * 0.015686274509) + 0.5)
     local color = (r_nearest * 40 + g_nearest*5 + b_nearest) + 1
-    local palletIndex = -1
-    local gray_distance = math.huge
-    do
-        for i,v in pairs(gray_variants) do
-            local totalDis = color_distance(r, g, b, v, v, v)
-            if totalDis < gray_distance then gray_distance = totalDis palletIndex = i end
-        end
-    end
+    local palletIndex = math.floor(((0.2116*r + 0.7152*g + 0.0722*b) / 15) + 0.5)
+
     local rgb_nearest = OCC[color]
-    if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < gray_distance then
-        return color
+    if palletIndex >= 1 and palletIndex <=16 then
+        if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < color_distance(r, g, b, gray_variants[palletIndex], gray_variants[palletIndex], gray_variants[palletIndex]) then
+            return color
+        else
+            return palletIndex + 240
+        end
     else
-        return palletIndex + 240
+        return color
     end
 end
 
