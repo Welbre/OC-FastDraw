@@ -120,20 +120,20 @@ local function rgb24_to_occ_index(rgb24)
     local b = rgb24 & 0xFF         -- Blue is the low 8 bits
 
     -- Otherwise, map to the nearest red, green, and blue variants
-    local r_nearest = math.floor((r * 5 / 255) + 0.5)
-    local g_nearest = math.floor((g * 7 / 255) + 0.5)
-    local b_nearest = math.floor((b * 4 / 255) + 0.5)
+    local r_nearest = math.floor((r * 0.019607843137) + 0.5)
+    local g_nearest = math.floor((g * 0.027450980392) + 0.5)
+    local b_nearest = math.floor((b * 0.015686274509) + 0.5)
     local color = (r_nearest * 40 + g_nearest*5 + b_nearest) + 1
     local palletIndex = -1
+    local gray_distance = math.huge
     do
-        local distance = math.huge
         for i,v in pairs(gray_variants) do
             local totalDis = color_distance(r, g, b, v, v, v)
-            if totalDis < distance then distance = totalDis palletIndex = i end
+            if totalDis < gray_distance then gray_distance = totalDis palletIndex = i end
         end
     end
     local rgb_nearest = OCC[color]
-    if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < color_distance(r, g, b, gray_variants[palletIndex], gray_variants[palletIndex], gray_variants[palletIndex]) then
+    if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < gray_distance then
         return color
     else
         return palletIndex + 240
