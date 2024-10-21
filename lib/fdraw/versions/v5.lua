@@ -259,17 +259,23 @@ function op.flush()
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
         write(string.format("CHARFOREBACK %s, 0x%x, 0x%x\n", __char, OCC[__fore], OCC[__back]))
-        local i = 1
-        while i <= #pipeline do
-            local x, y, w, h, _i = try_fill(pipeline, i)
-            if x then
-                write(string.format("######\9\9\9 %d, %d, %d, %d\n", x,y,w+x-1 ,h+y-1))
-                flush()
-                fill(x, y, w, h, __char)
-                i = _i + 2
-            else
+        --Check if the image is too fragmentad, if true, skip the fill check, and only use the set function
+        if #vir_tree[selected_buff] > 80 then
+            for i=1, #pipeline, 2 do
                 set(pipeline[i], pipeline[i+1], __char)
-                i = i + 2
+            end
+        else
+            local i = 1
+            while i <= #pipeline do
+                local x, y, w, h, _i = try_fill(pipeline, i)
+                if x then
+                    write(string.format("######\9\9\9 %d, %d, %d, %d\n", x,y,w+x-1 ,h+y-1))
+                    flush()
+                    fill(x, y, w, h, __char)
+                else
+                    set(pipeline[i], pipeline[i+1], __char)
+                end
+                i = _i + 2
             end
         end
     end
