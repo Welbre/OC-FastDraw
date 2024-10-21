@@ -16,6 +16,7 @@ Download and copy the lib folder, and paste in your opencomputers computer root.
 Or use this command to download and install the fdraw lib.
 ```bash
 wget -f https://raw.githubusercontent.com/Welbre/OC-FastDraw/refs/heads/master/fdraw_installer.lua -O /tmp/fdraw_installer.lua && /tmp/fdraw_installer.lua
+```
 # How use it
 To use the FastDraw in your project, follow the code below.
 ```lua
