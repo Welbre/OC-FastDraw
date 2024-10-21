@@ -9,8 +9,6 @@ Uses an algorithm to find sections that can be drawn with fill instead of mutipl
 # Consideration
 Keep in mind that, fdraw is on development, probably your code will break in the fucture updates.
 #### Bugs
-The grayscale representations are completely wrong.<br>
-Some images have a little difference from the original (drawn without the fdraw).<br>
 Pixels that have been drawn multiple times with different colors do not respect the correct drawing order.<br>
 Only have suport to draw one char, so you can't use fdraw.set to draw a string. **Will be implemented later**.
 # Setup
