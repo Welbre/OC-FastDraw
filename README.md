@@ -12,8 +12,10 @@ Keep in mind that, fdraw is on development, probably your code will break in the
 Pixels that have been drawn multiple times with different colors do not respect the correct drawing order.<br>
 Only have suport to draw one char, so you can't use fdraw.set to draw a string. **Will be implemented later**.
 # Setup
-Just download the lib folder, and paste in your opencomputers computer root.<br>
-A wget version will be developed later.
+Download and copy the lib folder, and paste in your opencomputers computer root.<br>
+Or use this command to download and install the fdraw lib.
+```bash
+wget -f https://raw.githubusercontent.com/Welbre/OC-FastDraw/refs/heads/master/fdraw_installer.lua -O /tmp/fdraw_installer.lua && /tmp/fdraw_installer.lua
 # How use it
 To use the FastDraw in your project, follow the code below.
 ```lua

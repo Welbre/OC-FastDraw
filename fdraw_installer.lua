@@ -34,7 +34,7 @@ local file_list = {
 require("term").clear()
 require("component").gpu.setForeground(0xAAAAFF)
 print("Downloading fdraw lib.")
-require("component").gpu.setForeground(0x32324d)
+require("component").gpu.setForeground(0x4e4e78)
 os.execute("mkdir /lib/fdraw")
 print("create /lib/fdraw")
 os.execute("mkdir /lib/fdraw/versions")
@@ -43,5 +43,8 @@ os.execute("mkdir /lib/fdraw/benchmark")
 print("create /lib/fdraw/benchmark")
 for _, file in pairs(file_list) do
     downloadfile(download_link .. file, file)
-    print(file .. "conclued!")
+    print(file .. " conclued!")
 end
+
+require("component").gpu.setForeground(0x0d0d6e)
+print("Fdraw installed with success!")
