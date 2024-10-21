@@ -108,10 +108,7 @@ function op.display(x, y, width, height, x0, y0)
 end
 
 local function color_distance(r, g, b, r1, g1, b1)
-    local r_dis = r-r1
-    local g_dis = g-g1
-    local b_dis = b-b1
-    return (0.2126 * (r_dis * r_dis)) + (0.7152 * (g_dis * g_dis)) + (0.0722 * (b_dis * b_dis))
+    return (0.2126*((r-r1)^2)) + (0.7152*((g-g1)^2)) + (0.0722*((b-b1)^2))
 end
 
 local function rgb24_to_occ_index(rgb24)
@@ -186,51 +183,18 @@ function op.get(x, y) --Need to be implemented
     return nil
 end
 
-function op.log()
-    local log = io.open("/log.txt", "w")
-    assert(log, "Log in nill!")
-    for CHARFOREBACK, pipeline in pairs(vir_tree[selected_buff]) do
-        local _char, _fore,_back = (CHARFOREBACK & 0xff0000) >> 16 ,((CHARFOREBACK & 0xFF00) >> 8) + 1, (CHARFOREBACK & 0xff) + 1
-        log:write(string.format("[%d, %d] OCC(0x%x, 0x%x, \"%s\"(%d)) -> ", _fore, _back, OCC[_fore], OCC[_back], string.char(_char), _char))
-        for k, v in pairs(pipeline) do
-            log:write(v, #pipeline == k and "" or ", ")
-        end
-        log:write("\n")
-    end
-    for CHARFOREBACK, pipeline in pairs(vir_tree[selected_buff]) do
-        local __char, __fore, __back = string.char((CHARFOREBACK & 0xff0000) >> 16) ,((CHARFOREBACK & 0xFF00) >> 8) + 1, (CHARFOREBACK & 0xFF) + 1
-        log:write(string.format("\9\9SET :: [%d, %d, %s]\n", __fore, __back, __char))
-        for i=1, #pipeline, 2 do
-            log:write(string.format("(%d, %d) \n", pipeline[i], pipeline[i+1]))
-        end
-    end
-    log:close()
-end
-local block --= io.open("/block.txt", "w")
-local write = function(str)
-    if block then block:write(str) end
-end
-local flush = function()
-    if block then block:flush() end
-end
 local function try_fill(pipeline, i)
-    write(string.format("block start with (i = %d) ... \n", i))
     local x, y = pipeline[i], pipeline[i+1]
-    write(string.format("inicial state %d, %d \n", x, y))
-    if not ((i + 3) <= #pipeline) then write("reach the end of pipe\n") flush() return nil, nil, nil, nil, i end -- check if reach the end of pipeline.
+    if not ((i + 3) <= #pipeline) then return nil, nil, nil, nil, i end -- check if reach the end of pipeline.
     local dirX, dirY = math.abs(pipeline[i+2] -x), math.abs(pipeline[i+3] -y)
-    write("block dir " .. dirX .. " " .. dirY .. "\n")
-    if math.sqrt(dirX ^ 2  + dirY ^ 2) > 1 then write(string.format("Fail in the direction %d %d (i = %d) %s %s \n", dirX, dirY, i, dirX > 1,dirY > 1)) flush() return nil, nil, nil, nil, i end --Check the next pixel in the pipeline.
+    if math.sqrt(dirX ^ 2  + dirY ^ 2) > 1 then return nil, nil, nil, nil, i end --Check the next pixel in the pipeline.
     i = i + 2 -- if reaches this line then the next pixel have been checked, so increment the index to the next one.
 
     ::continue::
     while (i + 3) <= #pipeline do
-        write(string.format("actual %d %d ", pipeline[i], pipeline[i+1]))
-        write(string.format(", next %d %d \n", pipeline[i+2], pipeline[i+3]))
         if math.abs(pipeline[i+2]-pipeline[i]) == dirX then --Check if the next one is in the same line that the frist one
             if math.abs(pipeline[i+3]-pipeline[i+1]) == dirY then
                 i = i + 2 --if reaches here, the pixel is in the line
-                write("pixel pass! i = " .. i .. " from i = ".. i - 2 .. "\n")
                 goto continue
             end
         end
@@ -243,13 +207,10 @@ local function try_fill(pipeline, i)
     if pipeline[i+1] < y then
         y = pipeline[i+1]
     end
-    write(string.format("block end, return %d, %d, %d, %d, %d \n", x, y, w, h, i))
-    flush()
     return x, y, w, h, i
 end
 
 function op.flush()
-    --op.log()
     local buffer = getBuff()
     setBuff(selected_buff)
     local _fore, _back = fore, back
@@ -258,7 +219,6 @@ function op.flush()
         local __char, __fore, __back = string.char((CHARFOREBACK & 0xff0000) >> 16) ,((CHARFOREBACK & 0xFF00) >> 8) + 1, (CHARFOREBACK & 0xFF) + 1
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
-        write(string.format("CHARFOREBACK %s, 0x%x, 0x%x\n", __char, OCC[__fore], OCC[__back]))
         --Check if the image is too fragmentad, if true, skip the fill check, and only use the set function
         if #vir_tree[selected_buff] > 80 then
             for i=1, #pipeline, 2 do
@@ -269,8 +229,6 @@ function op.flush()
             while i <= #pipeline do
                 local x, y, w, h, _i = try_fill(pipeline, i)
                 if x then
-                    write(string.format("######\9\9\9 %d, %d, %d, %d\n", x,y,w+x-1 ,h+y-1))
-                    flush()
                     fill(x, y, w, h, __char)
                 else
                     set(pipeline[i], pipeline[i+1], __char)
@@ -279,7 +237,6 @@ function op.flush()
             end
         end
     end
-    if block then block:close() end
     vir_tree[selected_buff] = {}
     setBuff(buffer)
 end
