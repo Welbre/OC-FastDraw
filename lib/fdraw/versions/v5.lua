@@ -115,6 +115,8 @@ local function color_distance(r, g, b, r1, g1, b1)
 end
 
 local function rgb24_to_occ_index(rgb24)
+    --Fast calculation for saturates values, 0, 0xff, 0xff00, 0xff0000 0xffffff
+    if rgb24 == 0 then return 1 elseif rgb24 == 0xff then return 5 elseif rgb24 == 0xff00 then return 36 elseif rgb24 == 0xff0000 then return 201 elseif rgb24 == 0xffffff then return 240 end
     local r = (rgb24 >> 16) & 0xFF -- Red is the high 8 bits
     local g = (rgb24 >> 8) & 0xFF  -- Green is the middle 8 bits
     local b = rgb24 & 0xFF         -- Blue is the low 8 bits
@@ -123,18 +125,19 @@ local function rgb24_to_occ_index(rgb24)
     local r_nearest = math.floor((r * 0.019607843137) + 0.5)
     local g_nearest = math.floor((g * 0.027450980392) + 0.5)
     local b_nearest = math.floor((b * 0.015686274509) + 0.5)
-    local color = (r_nearest * 40 + g_nearest*5 + b_nearest) + 1
-    local palletIndex = math.floor(((0.2116*r + 0.7152*g + 0.0722*b) / 15) + 0.5)
+    local colorIndex = (r_nearest * 40 + g_nearest*5 + b_nearest) + 1
+    local rgb_nearest = OCC[colorIndex]
+    local grayIndex = math.floor(((0.2116*r + 0.7152*g + 0.0722*b) / 15) + 0.5)
 
-    local rgb_nearest = OCC[color]
-    if palletIndex >= 1 and palletIndex <=16 then
-        if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < color_distance(r, g, b, gray_variants[palletIndex], gray_variants[palletIndex], gray_variants[palletIndex]) then
-            return color
+    if grayIndex >= 1 and grayIndex <=16 then
+        local gray = gray_variants[grayIndex]
+        if color_distance(r, g, b, (rgb_nearest >> 16), (rgb_nearest >> 8) & 0xFF, rgb_nearest & 0xFF) < color_distance(r, g, b, gray, gray, gray) then
+            return colorIndex
         else
-            return palletIndex + 240
+            return grayIndex + 240
         end
     else
-        return color
+        return colorIndex
     end
 end
 
