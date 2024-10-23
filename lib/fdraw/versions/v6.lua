@@ -225,7 +225,7 @@ end
 local function quicksort(list)
     local function convertToSort(_mem)
         local arr = {}
-        for i,v in pairs(_mem) do table.insert(arr, {i, v}) end
+        for i,v in pairs(_mem) do table.insert(arr, {i & 0xffff, (i & 0xff0000) >> 16, v}) end
         return arr, 1, #arr
     end
     local function partition(arr, _low, _high)
@@ -258,8 +258,8 @@ function op.flush()
     setf(OCC[_fore]) setb(OCC[_back])
 
     for _, CHARFOREBACK_PIPELINE in pairs(quicksort(vir_tree[selected_buff])) do
-        local CHARFOREBACK, pipeline = CHARFOREBACK_PIPELINE[1], CHARFOREBACK_PIPELINE[2]
-        local __char, __fore, __back = string.char((CHARFOREBACK & 0xff0000) >> 16) ,((CHARFOREBACK & 0xFF00) >> 8) + 1, (CHARFOREBACK & 0xFF) + 1
+        local FOREBACK, CHAR, pipeline = CHARFOREBACK_PIPELINE[1], CHARFOREBACK_PIPELINE[2], CHARFOREBACK_PIPELINE[3]
+        local __char, __fore, __back = string.char(CHAR) ,((FOREBACK & 0xFF00) >> 8) + 1, (FOREBACK & 0xFF) + 1
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
         --Check if the image is too fragmentad, if true, skip the fill check, and only use the set function

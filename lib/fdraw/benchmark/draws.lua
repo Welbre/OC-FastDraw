@@ -33,13 +33,13 @@ local function createTemperatureMap(sx,sy, cx, cy, maxDistance)
     return map
 end
 
-local function createRandMap(seed)
+local function createRandMap(seed, isCharMode)
     math.randomseed(seed)
     local map = {}
     for x=1, res[1] do
         map[x] = {}
         for y=1, res[2] do
-            map[x][y] = math.random(0, 0xffffff)
+            map[x][y] = isCharMode and string.char(math.random(32, 126)) or math.random(0, 0xffffff)
         end
     end
     return map
@@ -60,6 +60,7 @@ end
 local temperatureMap = createTemperatureMap(res[1], res[2], res[1] / 2, res[2] / 2, math.min(res[1] / 2, res[2] / 2) * 0.75)
 local fore_map = createRandMap(0xff)
 local back_map = createRandMap(-2)
+local char_map = createRandMap(48622, true)
 local map3 = createMap3()
 
 
@@ -94,7 +95,7 @@ function draws.raw_draw2()
         for y=1, res[2] do
             fdraw.gpu.setBackground(back_map[x][y])
             fdraw.gpu.setForeground(fore_map[x][y])
-            fdraw.gpu.set(x, y, "x")
+            fdraw.gpu.set(x, y, char_map[x][y])
         end
     end
 end
@@ -156,7 +157,7 @@ function draws.draw2()
         for y=1, res[2] do
             fdraw.setb(back_map[x][y])
             fdraw.setf(fore_map[x][y])
-            fdraw.set(x, y, "x")
+            fdraw.set(x, y, char_map[x][y])
         end
     end
 end
