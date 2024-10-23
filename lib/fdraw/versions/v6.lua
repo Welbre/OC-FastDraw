@@ -2,7 +2,7 @@
 local op = {flushs = {}}
 local error_level = 0
 local selected_buff, vir_tree = 0, {}
-local fore, back, char = 1, 1, 0
+local fore, back, char = 240, 1, 0
 --A color map that convert a occ (Open-Computers-Color) to a rgb24(8bit per chaneel) equivalent.
 --In the Open-Computers Mod the "0xc" and the "0xd" don't have difference, because the color are converted in a pallet
 --The OOC color is a combination of 4 blue tones + black, 7 green + black, and 5 red + black
@@ -12,7 +12,7 @@ local red_variants, green_variants, blue_variants = {0, 51, 102, 153, 204, 255},
 local gray_variants = {0xf, 0x1E, 0x2D, 0x3C, 0x4D, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0}
 local set, setf, setb, get, getf, getb, new, free, cp, bitblt, fill, setBuff, getBuff, getRes
 
-local function get_CHARFOREBACK_pipeline(mem)
+local function get_CharForeBack_pipeline(mem)
     local index = (char << 16) | ((fore - 1) << 8) | (back - 1)
     local pipeline = mem[index]
     if not pipeline then pipeline = {} mem[index] = pipeline end
@@ -88,7 +88,7 @@ end
 function op.fill(x, y, width, height, _char)
     char = string.byte(_char)
     local mem = vir_tree[selected_buff]
-    local pixel_tree = get_CHARFOREBACK_pipeline(mem)
+    local pixel_tree = get_CharForeBack_pipeline(mem)
     for i = x, width do
         for j = y, height do
             local len = #pixel_tree
@@ -156,22 +156,31 @@ function op.getb()
     return OCC[back]
 end
 
-function op.set(x, y, _char)
-    char = string.byte(_char)
-    local pixel_tree = get_CHARFOREBACK_pipeline(vir_tree[selected_buff])
-    local len = #pixel_tree
-    pixel_tree[len + 1] = x
-    pixel_tree[len + 2] = y
+function op.set(x, y, value)
+    local cache = {}
+    local mem = vir_tree[selected_buff]
+    for i=1, #value do
+        local pixel_tree = cache[i]
+        if not cache[i] then
+            char = string.byte(value, i)
+            pixel_tree = get_CharForeBack_pipeline(mem)
+            cache[i] = pixel_tree
+        end
+
+        local len = #pixel_tree
+        pixel_tree[len + 1] = x
+        pixel_tree[len + 2] = y
+    end
 end
 
 function op.setAll(array)
     local buffer = vir_tree[selected_buff]
-    local pixel_tree = get_CHARFOREBACK_pipeline(buffer)
+    local pixel_tree = get_CharForeBack_pipeline(buffer)
     local len = #pixel_tree
     for _, pixel in pairs(array) do
         if pixel[3] ~= char then
             char = pixel[3]
-            pixel_tree = get_CHARFOREBACK_pipeline(buffer)
+            pixel_tree = get_CharForeBack_pipeline(buffer)
             len = #pixel_tree
         end
         pixel_tree[len + 1] = pixel[1]

@@ -9,8 +9,7 @@ Uses an algorithm to find sections that can be drawn with fill instead of mutipl
 # Consideration
 Keep in mind that, fdraw is on development, probably your code will break in the fucture updates.
 #### Bugs
-Pixels that have been drawn multiple times with different colors do not respect the correct drawing order.<br>
-Only have suport to draw one char, so you can't use fdraw.set to draw a string. **Will be implemented later**.
+Pixels that have been drawn multiple times with different colors do not respect the correct drawing order.
 # Setup
 Download and copy the lib folder, and paste in your opencomputers computer root.<br>
 Or use this command to download and install the fdraw lib.
