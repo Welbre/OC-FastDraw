@@ -57,7 +57,7 @@ local function DO(color)
     local reMove = false
     ::top::
     for i=0, 0 do
-        fdraw.setVersion(fdraw.versions.v5)
+        fdraw.setVersion(fdraw.versions.v6)
         local buffer_index = fdraw.new(res[1], res[2])
         fdraw.select(buffer_index)
         fdraw.draw(func, color, fdraw.set, fdraw.setb)
