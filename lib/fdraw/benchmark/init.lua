@@ -1,8 +1,7 @@
 local fdraw = require("fdraw")
-local draws = require"fdraw.benchmark.draws"
-local computer = require("computer")
+local draws = require("fdraw.benchmark.draws")
 local term = require("term")
-local doMemory = false
+local computer = require("computer")
 
 local res = {fdraw.gpu.getResolution()}
 
@@ -12,37 +11,23 @@ local function clear()
     fdraw.gpu.fill(1,1, 160, 50, " ")
 end
 
-local function freeMemory()
-    local result = 0
-    for i = 1, 20 do
-    ---@diagnostic disable-next-line: undefined-field
-      result = math.max(result, computer.freeMemory())
-      os.sleep(0)
-    end
-    return result
-end
-
 ---@type Benchmark[]
 local benchs = {}
-local preBenchmark = {}
 local function newBench(name, allocator, ...)
+    ---@param self Benchmark
     local function benchmark(self)
         for _, draw in pairs(self.draws) do
-            if preBenchmark[allocator] then preBenchmark[allocator]() end --Do pre benchmark
-
-            local start_mem
-            if doMemory then start_mem = freeMemory() end
-            local start = os.time()
+            fdraw.setGcall(0)
+            local inicial = computer.uptime()
 
             if not self.allocator then draw() else self.allocator(draw) end
 
-            table.insert(self.results.cycles, os.time() - start)
-            if doMemory then table.insert(self.results.memory, (start_mem - freeMemory()) / 1024) end
-            if not doMemory then freeMemory() end
+            table.insert(self.results_gcall, fdraw.getGcall())
+            table.insert(self.results_time, (computer.uptime() - inicial) * 1000)
         end
     end
     ---@class Benchmark
-    local instance = {mark_name = name, allocator = allocator, draws = {...}, results = {cycles = {}, memory = {}}, benchmark = benchmark}
+    local instance = {mark_name = name, allocator = allocator, draws = {...}, results_gcall = {}, results_time = {}, benchmark = benchmark}
     table.insert(benchs, instance)
 
     local ok, err = xpcall(benchmark, function(_err) return debug.traceback(_err,2) end, instance)
@@ -83,7 +68,8 @@ newBench("V6", asBufferDraw(fdraw.flush), draws.draw0, draws.draw1, draws.draw2,
 --################################### Plot definitions ########################################
 --#############################################################################################
 
-local analysed = {cycles = {}, memory = {}}
+local gcall_analysed = {}
+local time_analysed = {}
 local line = 1
 local spacer = 12
 local back_line = {0xf0f0f, 0x1e1e1e}
@@ -130,60 +116,81 @@ end
 
 local function converst_results(list)
     local s_results = {}
-    for _, v in pairs(list) do table.insert(s_results, string.format("%.2f", v)) end
+    for _, v in pairs(list) do
+        table.insert(s_results, math.floor(v) == v and string.format("%d", v) or string.format("%.2f", v))
+    end
     return table.unpack(s_results)
 end
 
 ---@param bench Benchmark
-local function printResult(bench, indexer)
+local function printGcallResult(bench)
     local isTheBestOne = true
-    for i, result in pairs(bench.results[indexer]) do
-        if math.abs(analysed[indexer][i].best - result) > 0.01 then isTheBestOne = false end
+    for i, result in pairs(bench.results_gcall) do
+        if math.abs(gcall_analysed[i].best - result) > 0.01 then isTheBestOne = false end
         if not isTheBestOne then break end
     end
     local colors = {isTheBestOne and 0xff00 or 0xffffff}
-    for i, data in pairs(analysed[indexer]) do
-        table.insert(colors, rgbGradient(data.best, data.worst, bench.results[indexer][i]))
+    for i, data in pairs(gcall_analysed) do
+        table.insert(colors, rgbGradient(data.best, data.worst, bench.results_gcall[i]))
     end
-    raw_print_colored(colors, bench.mark_name, converst_results(bench.results[indexer]))
+    raw_print_colored(colors, bench.mark_name, converst_results(bench.results_gcall))
+end
+---@param bench Benchmark
+local function printTimeResult(bench)
+    local isTheBestOne = true
+    for i, result in pairs(bench.results_time) do
+        if math.abs(time_analysed[i].best - result) > 0.01 then isTheBestOne = false end
+        if not isTheBestOne then break end
+    end
+    local colors = {isTheBestOne and 0xff00 or 0xffffff}
+    for i, data in pairs(time_analysed) do
+        table.insert(colors, rgbGradient(data.best, data.worst, bench.results_time[i]))
+    end
+    raw_print_colored(colors, bench.mark_name, converst_results(bench.results_time))
 end
 
 local function analyze()
-    local keys = {"cycles"}
-    if doMemory then table.insert(keys, "memory") end
-    for _, indexer in pairs(keys) do
-        for i=1, #benchs[1].results[indexer] do
-            local this = {best = math.huge, worst = -math.huge, best_name = "", worst_name = ""}
-            analysed[indexer][i] = this
-            for _, bench in pairs(benchs) do
-                local result = bench.results[indexer][i]
-                if result < this.best then this.best = result this.best_name = bench.mark_name end --get best
-                if result > this.worst then this.worst = result this.worst_name = bench.mark_name end --get worst
-                if #bench.mark_name > spacer then spacer = #bench.mark_name + 5 end -- max lenght
-            end
+    for i=1, #benchs[1].results_gcall do --analyze gcall
+        local this = {best = math.huge, worst = -math.huge, best_name = "", worst_name = ""}
+        gcall_analysed[i] = this
+        for _, bench in pairs(benchs) do
+            local result = bench.results_gcall[i]
+            if result < this.best then this.best = result this.best_name = bench.mark_name end --get best
+            if result > this.worst then this.worst = result this.worst_name = bench.mark_name end --get worst
+            if #bench.mark_name > spacer then spacer = #bench.mark_name + 5 end -- max lenght
+        end
+    end
+    for i=1, #benchs[1].results_time do --analyze time
+        local this = {best = math.huge, worst = -math.huge, best_name = "", worst_name = ""}
+        time_analysed[i] = this
+        for _, bench in pairs(benchs) do
+            local result = bench.results_time[i]
+            if result < this.best then this.best = result this.best_name = bench.mark_name end --get best
+            if result > this.worst then this.worst = result this.worst_name = bench.mark_name end --get worst
+            if #bench.mark_name > spacer then spacer = #bench.mark_name + 5 end -- max lenght
         end
     end
 end
 
-local function plot(indexer, unity)
+local function plot(unity, list, printer)
     local header = {}
-    for _, _ in pairs(analysed[indexer]) do table.insert(header, unity) end
+    for _, _ in pairs(list) do table.insert(header, unity) end
     fdraw.gpu.setForeground(0xffffff)
     raw_print("Name", table.unpack(header))
 
     for _, bench in pairs(benchs) do
-        printResult(bench, indexer)
+        printer(bench)
     end
     raw_print()
 
     fdraw.gpu.setForeground(0x55ff55)
     local best_to_print = {}
-    for draw_i, data in pairs(analysed[indexer]) do best_to_print[draw_i] = data.best end
+    for draw_i, data in pairs(list) do best_to_print[draw_i] = data.best end
     raw_print("Best", converst_results(best_to_print))
 
     fdraw.gpu.setForeground(0xff5555)
     local worst_to_print = {}
-    for draw_i, data in pairs(analysed[indexer]) do worst_to_print[draw_i] = data.worst end
+    for draw_i, data in pairs(list) do worst_to_print[draw_i] = data.worst end
     raw_print("Worst", converst_results(worst_to_print))
 
     term.setCursor(1, line)
@@ -191,26 +198,18 @@ end
 local function plotData()
     fdraw.gpu.setForeground(0xffffff)
     raw_print(draws.names())
-    raw_print("Cycles Benchmark")
-    plot("cycles", "Cycles")
+    raw_print("Gcalls Benchmark")
+    plot("gcall", gcall_analysed, printGcallResult)
     raw_print()
-    if doMemory then
-        fdraw.gpu.setForeground(0xffffff)
-        raw_print("Memory Benchmark")
-        plot("memory", "KB")
-    end
+
+    fdraw.gpu.setForeground(0xffffff)
+    raw_print(draws.names())
+    raw_print("Gcalls Benchmark")
+    plot("ms", time_analysed, printTimeResult)
+    raw_print()
 end
 --#############################################################################################
 --####################################### Plot benchmark ######################################
 --#############################################################################################
 analyze()
 plotData()
-
---#############################################################################################
---####################################### Clear requires ######################################
---#############################################################################################
-require("package").loaded["fdraw"] = nil
-require("package").loaded["fdraw.benchmark"] = nil
-require("package").loaded["fdraw.benchmark.draws"] = nil
-
-return

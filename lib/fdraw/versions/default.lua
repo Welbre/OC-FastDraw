@@ -1,6 +1,6 @@
 
 ---@class Fdraw
-local op = {flushs = {} }
+local op = {flushs = {}, gcalls = 0}
 local error_level = 0
 local selected_buff, vir_vram = 0, {}
 local fore, back = 0xffffff, 0
@@ -20,6 +20,13 @@ function op.bind(addr)
     end
     try(gpu, ok, error_level) --Checks for error
 
+    for i,v in pairs(gpu) do
+        gpu[i] = function (...)
+            op.gcalls = op.gcalls + 1
+            return v(...)
+        end
+    end
+
     set = gpu.set
     setf = gpu.setForeground
     setb = gpu.setBackground
@@ -36,6 +43,14 @@ function op.bind(addr)
     getRes = gpu.getResolution
 
     op.gpu = gpu
+end
+
+function op.getGcall()
+    return op.gcalls
+end
+
+function op.setGcall(v)
+    op.gcalls = v
 end
 
 function op.new(width, height)

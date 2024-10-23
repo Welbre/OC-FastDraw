@@ -1,5 +1,5 @@
 local init = {
-    versions = {default = 0, v2 = 1, v3 = 2, v4 = 3, v5 = 4, v6 = 5}
+    versions = {default = 0, v2 = 1, v3 = 2, v4 = 3, v5 = 4, v6 = 5},
 }
 local selected = nil
 
@@ -14,6 +14,7 @@ function init.setVersion(version)
     package.loaded["fdraw.versions.v3"] = nil
     package.loaded["fdraw.versions.v4"] = nil
     package.loaded["fdraw.versions.v5"] = nil
+    package.loaded["fdraw.versions.v6"] = nil
 
     if version == 0 then
         setmetatable(init, {__index = require("fdraw.versions.default")})
@@ -35,6 +36,6 @@ function init.setVersion(version)
     init.bind()
 end
 
-init.setVersion(init.versions.v4) --Start with the v4 version.
+if not selected then init.setVersion(init.versions.v4) end --Start with the v4 version.
 
 return init
