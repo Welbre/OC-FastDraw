@@ -42,8 +42,9 @@ To use the FastDraw in your project, follow the code below.
   idx = nil --Only good practice, the idx now holds an index to a buffer that have been clean by the free function, so don't have any value for us.
 ```
 # Results
-This topic show the final result of fdraw otimization, the "Raw" benchmark is the raw use of set function. **Less points is better**.<br>
-![Windows](./benchmark.png)
+This topic show the final result of fdraw otimization,**Less points is better**.<br>
+![Windows](./benchmark.png)<br>
+**Raw** Uses only the default gpu functions.<br>
 # Exemple
 ![Windows](https://i.imgur.com/4nzTLSI.png)
 [CODE](./home/exemple.lua)
