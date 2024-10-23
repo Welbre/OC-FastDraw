@@ -157,18 +157,13 @@ function op.getb()
 end
 
 function op.set(x, y, value)
-    local cache = {}
     local mem = vir_tree[selected_buff]
     for i=1, #value do
-        local pixel_tree = cache[i]
-        if not cache[i] then
-            char = string.byte(value, i)
-            pixel_tree = get_CharForeBack_pipeline(mem)
-            cache[i] = pixel_tree
-        end
-
+        char = string.byte(value, i)
+        local pixel_tree = get_CharForeBack_pipeline(mem)
         local len = #pixel_tree
-        pixel_tree[len + 1] = x
+
+        pixel_tree[len + 1] = x + i - 1
         pixel_tree[len + 2] = y
     end
 end

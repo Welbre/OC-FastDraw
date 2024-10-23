@@ -1,10 +1,10 @@
----@type V5
+---@type V6
 local fdraw = require("fdraw")
 
---fdraw.setVersion(fdraw.versions.v5)
+fdraw.setVersion(fdraw.versions.v6)
 
-local function new(x,y,w,h, color)
-    return {x=x,y=y,w=w, h=h, index = fdraw.new(w, h), color = color}
+local function new(x,y,w,h, color, title)
+    return {x=x,y=y,w=w, h=h, index = fdraw.new(w, h), color = color, title = title}
 end
 
 local function dark_color(color, factor)
@@ -19,11 +19,13 @@ end
 
 local function draw_back(_window)
     local c0 = _window.color
-    local c1 = dark_color(c0, 0.6)
+    local c1 = dark_color(c0, 0.75)
     fdraw.setb(c0)
-    fdraw.fill(1, 1, _window.w, _window.h, " ") --Fill all screen
+    fdraw.fill(1, 2, _window.w, _window.h, " ") --Fill all screen
     fdraw.setb(c1)
-    for x=1, _window.w do fdraw.set(x, 1, " ") end
+    fdraw.fill(1, 1, _window.w, 1, " ")
+    fdraw.flush()
+    fdraw.set(1, 1, _window.title)
 end
 
 local function draw(window)
@@ -33,11 +35,11 @@ local function draw(window)
     fdraw.display(window.x, window.y, 160, 50, 1, 1)
 end
 
-local window = new(1, 1, 50, 10, 0xff)
-local window2 = new(60, 30, 50, 10, 0xff00)
-local window3 = new(100, 20, 50, 10, 0xff0000)
-local window4 = new(1, 21, 30, 10, 0xaaaaff)
-local window5 = new(60, 5, 35, 10, 0xdddd00)
+local window = new(1, 1, 50, 10, 0xff, "Hello world")
+local window2 = new(60, 30, 50, 10, 0xff00, "Ola mundo")
+local window3 = new(100, 20, 50, 10, 0xff0000, "X-Burguer")
+local window4 = new(1, 21, 30, 10, 0xaaaaff, "Camarao")
+local window5 = new(60, 5, 35, 10, 0xdddd00, "Generator 3")
 
 draw(window)
 draw(window2)
