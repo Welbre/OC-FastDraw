@@ -204,7 +204,7 @@ local function plotData()
 
     fdraw.gpu.setForeground(0xffffff)
     raw_print(draws.names())
-    raw_print("Gcalls Benchmark")
+    raw_print("Time Benchmark")
     plot("ms", time_analysed, printTimeResult)
     raw_print()
 end
