@@ -263,7 +263,7 @@ function op.flush()
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
         --Check if the image is too fragmentad, if true, skip the fill check, and only use the set function
-        if #vir_tree[selected_buff] > 500 then
+        if #vir_tree[selected_buff] > 300 then
             for i=1, #pipeline, 2 do
                 set(pipeline[i], pipeline[i+1], __char)
             end
