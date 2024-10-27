@@ -191,8 +191,16 @@ function op.setAll(array)
     end
 end
 
-function op.get(x, y) --Need to be implemented
-    return nil
+function op.get(x, y)
+    local mem = vir_tree[selected_buff]
+    for back_fore_char, pipeline in pairs(mem) do
+        for i = 1, #pipeline, 2 do
+            if pipeline[i] == x and pipeline[i+1] == y then
+                return string.char(back_fore_char & 0xFF), OCC[(back_fore_char >> 8) & 0xFF], OCC[(back_fore_char >> 16) & 0xFF]
+            end
+        end
+    end
+    return get(x,y)
 end
 
 local function try_fill(pipeline, i)
