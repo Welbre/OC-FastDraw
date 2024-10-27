@@ -1,4 +1,4 @@
-local fdraw = require("fdraw")
+local fdraw = require("fdraw").setVersion(2)
 local event = require("event")
 local geo   = require("fdraw.geo")
 fdraw.bind()
@@ -57,7 +57,7 @@ local function DO(color)
     local reMove = false
     ::top::
     for i=0, 0 do
-        fdraw.setVersion(fdraw.versions.v6)
+        fdraw.setVersion(fdraw.version.debug)
         local buffer_index = fdraw.new(res[1], res[2])
         fdraw.select(buffer_index)
         fdraw.draw(func, color, fdraw.set, fdraw.setb)
@@ -74,7 +74,7 @@ local function DO(color)
             event.cancel(id)
         end
 
-        fdraw.setVersion(fdraw.versions.default)
+        fdraw.setVersion(fdraw.version.release)
         local buffer_index = fdraw.new(res[1], res[2])
         fdraw.select(buffer_index)
         fdraw.gpu.setActiveBuffer(buffer_index)
