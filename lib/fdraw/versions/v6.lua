@@ -237,18 +237,18 @@ local function sort(mem)
     local function merge(array, left, mid, right)
         local leftSize = mid - left + 1
         local rightSize = right - mid
-    
+
         -- Create temporary tables for left and right halves
         local leftArray = {}
         local rightArray = {}
-    
+
         for i = 1, leftSize do
             leftArray[i] = array[left + i - 1]
         end
         for i = 1, rightSize do
             rightArray[i] = array[mid + i]
         end
-    
+
         -- Merge temporary tables back into array
         local i, j, k = 1, 1, left
         while i <= leftSize and j <= rightSize do
@@ -261,7 +261,7 @@ local function sort(mem)
             end
             k = k + 1
         end
-    
+
         -- Copy remaining elements
         while i <= leftSize do
             array[k] = leftArray[i]
