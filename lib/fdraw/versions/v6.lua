@@ -222,33 +222,30 @@ local function try_fill(pipeline, i)
     return x, y, w, h, i
 end
 
-local function quicksort(list)
-    local function convertToSort(_mem)
-        local arr = {}
-        for i,v in pairs(_mem) do table.insert(arr, {i & 0xffff, (i & 0xff0000) >> 16, v}) end
-        return arr, 1, #arr
+local function sort(list)
+    local arr = {}
+    for i, v in pairs(list) do
+        table.insert(arr, {i , v})
     end
-    local function partition(arr, _low, _high)
-        local p,i,j = arr[_low], _low, _high
-        while i < j do
-            while (arr[i][1] <= p[1]) and (i <= _high - 1) do i = i + 1 end
-            while (arr[j][1] > p[1]) and (j >= _low + 1) do j = j - 1 end
-            if i < j then
-                arr[i], arr[j] = arr[j], arr[i]
+    for i = 1, #arr do
+        local best = math.huge
+        local best_idx = i
+
+        for j = i + 1, #arr do
+            local value = arr[j][1]
+            if value < best then
+                best = value
+                best_idx = j
             end
         end
-        arr[_low], arr[j] = arr[j], arr[_low]
-        return j
+        arr[i], arr[best_idx] = arr[best_idx], arr[i]
     end
-    local function qsort(mem, low, high)
-        if low < high then
-            local pivot = partition(mem, low, high)
-            qsort(mem, low, pivot - 1)
-            qsort(mem, pivot + 1, high)
-            return mem
-        end
+    local file = io.open("/debug.txt", "a")
+    for i, v in pairs(arr) do
+        file:write(i,string.format(" 0x%x, 0x%x, 0x%x ", (v[1] >> 16) & 0xff,(v[1] >> 8) & 0xff, v[1] & 0xff), "\n")
     end
-    return qsort(convertToSort(list))
+    file:close()
+    return arr
 end
 
 function op.flush()
@@ -257,9 +254,9 @@ function op.flush()
     local _fore, _back = fore, back
     setf(OCC[_fore]) setb(OCC[_back])
 
-    for _, CHARFOREBACK_PIPELINE in pairs(quicksort(vir_tree[selected_buff])) do
-        local FOREBACK, CHAR, pipeline = CHARFOREBACK_PIPELINE[1], CHARFOREBACK_PIPELINE[2], CHARFOREBACK_PIPELINE[3]
-        local __char, __fore, __back = string.char(CHAR) ,((FOREBACK & 0xFF00) >> 8) + 1, (FOREBACK & 0xFF) + 1
+    for _, CHARFOREBACK_PIPELINE in pairs(sort(vir_tree[selected_buff])) do
+        local CHARFOREBACK, pipeline = CHARFOREBACK_PIPELINE[1], CHARFOREBACK_PIPELINE[2]
+        local __char, __fore, __back = string.char((CHARFOREBACK >> 16) >> 0xFF) ,((CHARFOREBACK >> 8) & 0xff) + 1, (CHARFOREBACK & 0xFF) + 1
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
         --Check if the image is too fragmentad, if true, skip the fill check, and only use the set function
