@@ -46,5 +46,5 @@ This topic show the final result of fdraw otimization,**Less points is better**.
 ![Windows](./benchmark.png)<br>
 **Raw** Uses only the default gpu functions.<br>
 # Exemple
-![Windows](https://i.imgur.com/4nzTLSI.png)
+![Windows](./img/example.png)
 [CODE](./home/exemple.lua)

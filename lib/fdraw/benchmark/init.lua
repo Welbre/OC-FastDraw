@@ -8,7 +8,7 @@ local res = {fdraw.gpu.getResolution()}
 local function clear()
     fdraw.gpu.setBackground(0)
     fdraw.gpu.setForeground(0xffffff)
-    fdraw.gpu.fill(1,1, 160, 50, " ")
+    fdraw.gpu.fill(1,1, res[1], res[2], " ")
 end
 
 ---@type Benchmark[]
