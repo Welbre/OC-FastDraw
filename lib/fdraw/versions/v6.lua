@@ -12,8 +12,8 @@ local red_variants, green_variants, blue_variants = {0, 51, 102, 153, 204, 255},
 local gray_variants = {0xf, 0x1E, 0x2D, 0x3C, 0x4D, 0x5A, 0x69, 0x78, 0x87, 0x96, 0xA5, 0xB4, 0xC3, 0xD2, 0xE1, 0xF0}
 local set, setf, setb, get, getf, getb, new, free, cp, bitblt, fill, setBuff, getBuff, getRes
 
-local function get_CharForeBack_pipeline(mem)
-    local index = (char << 16) | ((fore - 1) << 8) | (back - 1)
+local function get_BackForeChar_pipeline(mem)
+    local index = ((back - 1) << 16) | ((fore - 1) << 8) | char
     local pipeline = mem[index]
     if not pipeline then pipeline = {} mem[index] = pipeline end
     return pipeline
@@ -96,7 +96,7 @@ end
 function op.fill(x, y, width, height, _char)
     char = string.byte(_char)
     local mem = vir_tree[selected_buff]
-    local pixel_tree = get_CharForeBack_pipeline(mem)
+    local pixel_tree = get_BackForeChar_pipeline(mem)
     for i = x, width do
         for j = y, height do
             local len = #pixel_tree
@@ -168,7 +168,7 @@ function op.set(x, y, value)
     local mem = vir_tree[selected_buff]
     for i=1, #value do
         char = string.byte(value, i)
-        local pixel_tree = get_CharForeBack_pipeline(mem)
+        local pixel_tree = get_BackForeChar_pipeline(mem)
         local len = #pixel_tree
 
         pixel_tree[len + 1] = x + i - 1
@@ -178,12 +178,12 @@ end
 
 function op.setAll(array)
     local buffer = vir_tree[selected_buff]
-    local pixel_tree = get_CharForeBack_pipeline(buffer)
+    local pixel_tree = get_BackForeChar_pipeline(buffer)
     local len = #pixel_tree
     for _, pixel in pairs(array) do
         if pixel[3] ~= char then
             char = pixel[3]
-            pixel_tree = get_CharForeBack_pipeline(buffer)
+            pixel_tree = get_BackForeChar_pipeline(buffer)
             len = #pixel_tree
         end
         pixel_tree[len + 1] = pixel[1]
@@ -222,63 +222,79 @@ local function try_fill(pipeline, i)
     return x, y, w, h, i
 end
 
-local function sort(list)
-    local arr = {}
-    for i, v in pairs(list) do
-        table.insert(arr, {i , v})
-    end
-    local function merge(array, p, q, r)
-        local n1 = q-p+1
-        local n2 = r-q
-        local left = {}
-        local right = {}
-
-        for i=1, n1 do
-            left[i] = array[p+i-1]
+local function sort(mem)
+    --Convert the back_fore_char index to a array
+    --todo, convert the mem to a array, and use a lookup table to index the value
+    local arr = {} for back_fore_char, pipeline in pairs(mem) do table.insert(arr, {back_fore_char, pipeline}) end
+    local function merge(array, left, mid, right)
+        local leftSize = mid - left + 1
+        local rightSize = right - mid
+    
+        -- Create temporary tables for left and right halves
+        local leftArray = {}
+        local rightArray = {}
+    
+        for i = 1, leftSize do
+            leftArray[i] = array[left + i - 1]
         end
-        for i=1, n2 do
-            right[i] = array[q+i]
+        for i = 1, rightSize do
+            rightArray[i] = array[mid + i]
         end
-
-        left[n1+1] = {math.huge}
-        right[n2+1] = {math.huge}
-
-        local i=1
-        local j=1
-
-        for k=p, r do
-            if left[i][1]<=right[j][1] then
-                array[k] = left[i]
-                i=i+1
+    
+        -- Merge temporary tables back into array
+        local i, j, k = 1, 1, left
+        while i <= leftSize and j <= rightSize do
+            if leftArray[i][1] <= rightArray[j][1] then
+                array[k] = leftArray[i]
+                i = i + 1
             else
-                array[k] = right[j]
-                j=j+1
+                array[k] = rightArray[j]
+                j = j + 1
             end
+            k = k + 1
+        end
+    
+        -- Copy remaining elements
+        while i <= leftSize do
+            array[k] = leftArray[i]
+            i = i + 1
+            k = k + 1
+        end
+        while j <= rightSize do
+            array[k] = rightArray[j]
+            j = j + 1
+            k = k + 1
         end
     end
-    local function mergeSort(A, p, r)
-        if p < r then
-            local q = math.floor((p + r)/2)
-            mergeSort(A, p, q)
-            mergeSort(A, q+1, r)
-            merge(A, p, q, r)
+    local function mergeSort(array, left, right)
+        if left < right then
+            local mid = math.floor((left + right) / 2)
+
+            -- Sort first and second halves
+            mergeSort(array, left, mid)
+            mergeSort(array, mid + 1, right)
+
+            -- Merge the sorted halves
+            merge(array, left, mid, right)
         end
     end
-    mergeSort(list, 1, #list)
+    mergeSort(arr, 1, #arr)
     return arr
 end
 
 function op.flush()
     local buffer = getBuff()
     setBuff(selected_buff)
-    local _fore, _back = fore, back
-    setf(OCC[_fore]) setb(OCC[_back])
 
-    for _, CHARFOREBACK_PIPELINE in pairs(sort(vir_tree[selected_buff])) do
-        local CHARFOREBACK, pipeline = CHARFOREBACK_PIPELINE[1], CHARFOREBACK_PIPELINE[2]
-        local __char, __fore, __back = string.char((CHARFOREBACK >> 16) >> 0xFF) ,((CHARFOREBACK >> 8) & 0xff) + 1, (CHARFOREBACK & 0xFF) + 1
+    local _fore, _back = -1, -1
+
+    for _, backforechar_pipeline in pairs(sort(vir_tree[selected_buff])) do
+        local back_fore_char, pipeline = backforechar_pipeline[1], backforechar_pipeline[2]
+        local __back, __fore, __char = ((back_fore_char >> 16) & 0xFF) + 1, ((back_fore_char >> 8) & 0xFF) + 1, string.char(back_fore_char & 0xFF)
+
         if _fore ~= __fore then setf(OCC[__fore]) _fore = __fore end
         if _back ~= __back then setb(OCC[__back]) _back = __back end
+
         --Check if the image is too fragmentad, if true, skip the fill check, and only use the set function
         if #vir_tree[selected_buff] > 300 then
             for i=1, #pipeline, 2 do
@@ -297,6 +313,7 @@ function op.flush()
             end
         end
     end
+
     vir_tree[selected_buff] = {}
     setBuff(buffer)
 end
