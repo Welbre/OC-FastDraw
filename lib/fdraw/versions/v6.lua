@@ -227,24 +227,44 @@ local function sort(list)
     for i, v in pairs(list) do
         table.insert(arr, {i , v})
     end
-    for i = 1, #arr do
-        local best = math.huge
-        local best_idx = i
+    local function merge(array, p, q, r)
+        local n1 = q-p+1
+        local n2 = r-q
+        local left = {}
+        local right = {}
 
-        for j = i + 1, #arr do
-            local value = arr[j][1]
-            if value < best then
-                best = value
-                best_idx = j
+        for i=1, n1 do
+            left[i] = array[p+i-1]
+        end
+        for i=1, n2 do
+            right[i] = array[q+i]
+        end
+
+        left[n1+1] = {math.huge}
+        right[n2+1] = {math.huge}
+
+        local i=1
+        local j=1
+
+        for k=p, r do
+            if left[i][1]<=right[j][1] then
+                array[k] = left[i]
+                i=i+1
+            else
+                array[k] = right[j]
+                j=j+1
             end
         end
-        arr[i], arr[best_idx] = arr[best_idx], arr[i]
     end
-    local file = io.open("/debug.txt", "a")
-    for i, v in pairs(arr) do
-        file:write(i,string.format(" 0x%x, 0x%x, 0x%x ", (v[1] >> 16) & 0xff,(v[1] >> 8) & 0xff, v[1] & 0xff), "\n")
+    local function mergeSort(A, p, r)
+        if p < r then
+            local q = math.floor((p + r)/2)
+            mergeSort(A, p, q)
+            mergeSort(A, q+1, r)
+            merge(A, p, q, r)
+        end
     end
-    file:close()
+    mergeSort(list, 1, #list)
     return arr
 end
 
