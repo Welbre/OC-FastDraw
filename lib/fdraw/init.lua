@@ -15,7 +15,7 @@ function init.setVersion(version)
         package.loaded["fdraw.version.release"] = nil
         setmetatable(init, {__index = require("fdraw.version.debug")})
     else
-        error("Version " .. version .. " not finded!", 1)
+        error("Version " .. version .. " not finded!\n" .. "Use 1 to release or 2 to debug!", 1)
     end
 
     init.bind()

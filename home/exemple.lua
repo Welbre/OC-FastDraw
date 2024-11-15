@@ -1,8 +1,6 @@
----@type V6
 local fdraw = require("fdraw")
+fdraw = fdraw.setVersion(fdraw.version.release)
 require("term").clear()
-
-fdraw.setVersion(fdraw.versions.v6)
 
 local tick = 0
 local voltage = 25

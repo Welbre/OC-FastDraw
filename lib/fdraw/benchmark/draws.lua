@@ -1,5 +1,4 @@
-local fdraw = require "fdraw"
-local res = {fdraw.gpu.getResolution()}
+local res = {require("component").gpu.getResolution()}
 local geo = require"fdraw.geo"
 local draws = {}
 
@@ -63,129 +62,66 @@ local back_map = createRandMap(-2)
 local char_map = createRandMap(48622, true)
 local map3 = createMap3()
 
-
-function draws.raw_draw0()
+function draws.draw0(set, setf, setb)
     local rate = {0xff0000 / (res[1] * res[2]), 0xff00 / (res[1] * res[2]), 0xff / (res[1] * res[2])}
     local color = {0 ,0 , 0}
-    fdraw.gpu.setForeground(0)
+    setf(0)
     for x=1, res[1] do
-        fdraw.gpu.setBackground(color[1] | color[2] | color[3])
+        setb(color[1] | color[2] | color[3])
         color[1] = math.floor(color[1] + rate[1])
         color[2] = math.floor(color[2] + rate[2])
         color[2] = math.floor(color[2] + rate[2])
         for y=1, res[2] do
-            fdraw.gpu.set(x, y, "x")
+            set(x, y, "x")
         end
     end
 end
 
-function draws.raw_draw1()
-    fdraw.gpu.setForeground(0)
+function draws.draw1(set, setf, setb)
+    setf(0)
     for x=1, res[1] do
         for y=1, res[2] do
-            fdraw.gpu.setBackground(temperatureMap[x][y])
-            fdraw.gpu.set(x, y, "x")
+            setb(temperatureMap[x][y])
+            set(x, y, "x")
         end
     end
 end
 
-function draws.raw_draw2()
-    fdraw.gpu.setForeground(0)
+function draws.draw2(set, setf, setb)
+    setf(0)
     for x=1, res[1] do
         for y=1, res[2] do
-            fdraw.gpu.setBackground(back_map[x][y])
-            fdraw.gpu.setForeground(fore_map[x][y])
-            fdraw.gpu.set(x, y, char_map[x][y])
+            setb(back_map[x][y])
+            setf(fore_map[x][y])
+            set(x, y, char_map[x][y])
         end
     end
 end
 
-function draws.raw_draw3()
-    fdraw.gpu.setForeground(0)
-    fdraw.gpu.setBackground(0xffcc00)
-    geo.drawCircle(fdraw.gpu.set, {res[1] / 2, res[2] / 2}, 15, 3.1415926535 * 2 / 16)
-    fdraw.gpu.setBackground(0xff0000)
-    geo.drawCircle(fdraw.gpu.set, {res[1] / 4, res[2] / 2}, 25, 3.1415926535 * 2 / 16)
+function draws.draw3(set, setf, setb)
+    setf(0)
+    setb(0xffcc00)
+    geo.drawCircle(set, {res[1] / 2, res[2] / 2}, 25, 3.1415926535 * 2 / 16)
+    setb(0xff0000)
+    geo.drawCircle(set, {res[1] / 4, res[2] / 2}, 25, 3.1415926535 * 2 / 16)
     for i = 1, 10 do
-        geo.draw_color_line(fdraw.gpu.set, fdraw.gpu.setBackground, {1,i}, {160, i}, 0xff00, 0xff0000)
+        geo.draw_color_line(set, setb, {1,i}, {160, i}, 0xff00, 0xff0000)
     end
 end
 
-function draws.raw_draw4()
-    fdraw.gpu.setForeground(0)
+function draws.draw4(set, setf, setb)
+    setf(0)
     for x=1, res[1] do
         for y=1, res[2] do
-            fdraw.gpu.setBackground(map3[x][y])
-            fdraw.gpu.set(x, y, " ")
+            setb(map3[x][y])
+            set(x, y, " ")
         end
     end
 end
 
-function draws.raw_draw5()
-    fdraw.gpu.setForeground(0)
-    geo.draw_color_polygon(fdraw.gpu.set, fdraw.gpu.setBackground, {{1,1},{160,1},{160,50},{1,50}}, {0xffffff, 0xff00, 0, 0})
-end
-
-function draws.draw0()
-    local rate = {0xff0000 / (res[1] * res[2]), 0xff00 / (res[1] * res[2]), 0xff / (res[1] * res[2])}
-    local color = {0 ,0 , 0}
-    fdraw.setf(0)
-    for x=1, res[1] do
-        fdraw.setb(color[1] | color[2] | color[3])
-        color[1] = math.floor(color[1] + rate[1])
-        color[2] = math.floor(color[2] + rate[2])
-        color[2] = math.floor(color[2] + rate[2])
-        for y=1, res[2] do
-            fdraw.set(x, y, "x")
-        end
-    end
-end
-
-function draws.draw1()
-    fdraw.setf(0)
-    for x=1, res[1] do
-        for y=1, res[2] do
-            fdraw.setb(temperatureMap[x][y])
-            fdraw.set(x, y, "x")
-        end
-    end
-end
-
-function draws.draw2()
-    fdraw.setf(0)
-    for x=1, res[1] do
-        for y=1, res[2] do
-            fdraw.setb(back_map[x][y])
-            fdraw.setf(fore_map[x][y])
-            fdraw.set(x, y, char_map[x][y])
-        end
-    end
-end
-
-function draws.draw3()
-    fdraw.setf(0)
-    fdraw.setb(0xffcc00)
-    geo.drawCircle(fdraw.set, {res[1] / 2, res[2] / 2}, 25, 3.1415926535 * 2 / 16)
-    fdraw.setb(0xff0000)
-    geo.drawCircle(fdraw.set, {res[1] / 4, res[2] / 2}, 25, 3.1415926535 * 2 / 16)
-    for i = 1, 10 do
-        geo.draw_color_line(fdraw.set, fdraw.setb, {1,i}, {160, i}, 0xff00, 0xff0000)
-    end
-end
-
-function draws.draw4()
-    fdraw.setf(0)
-    for x=1, res[1] do
-        for y=1, res[2] do
-            fdraw.setb(map3[x][y])
-            fdraw.set(x, y, " ")
-        end
-    end
-end
-
-function draws.draw5()
-    fdraw.gpu.setForeground(0)
-    geo.draw_color_polygon(fdraw.set, fdraw.setb, {{1,1},{160,1},{160,50},{1,50}}, {0xffffff, 0xff00, 0, 0})
+function draws.draw5(set, setf, setb)
+    setf(0)
+    geo.draw_color_polygon(set, setb, {{1,1},{160,1},{160,50},{1,50}}, {0xffffff, 0xff00, 0, 0})
 end
 
 draws.names = function ()
