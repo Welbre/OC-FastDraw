@@ -25,9 +25,8 @@ end
 
 local download_link = "https://raw.githubusercontent.com/Welbre/OC-FastDraw/refs/heads/master"
 local file_list = {
-    "/lib/fdraw/vram.lua","/lib/fdraw/test.lua", "/lib/fdraw/init.lua", "/lib/fdraw/geo.lua",
-    "/lib/fdraw/versions/default.lua", "/lib/fdraw/versions/v1.lua", "/lib/fdraw/versions/v2.lua", "/lib/fdraw/versions/v3.lua",
-    "/lib/fdraw/versions/v4.lua", "/lib/fdraw/versions/v5.lua", "/lib/fdraw/versions/v6.lua",
+    "/lib/fdraw/test.lua", "/lib/fdraw/init.lua", "/lib/fdraw/geo.lua",
+    "/lib/fdraw/versions/release.lua", "/lib/fdraw/versions/debug.lua",
     "/lib/fdraw/benchmark/draws.lua", "/lib/fdraw/benchmark/init.lua"
 }
 
