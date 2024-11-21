@@ -26,7 +26,7 @@ end
 local download_link = "https://raw.githubusercontent.com/Welbre/OC-FastDraw/refs/heads/master"
 local file_list = {
     "/lib/fdraw/test.lua", "/lib/fdraw/init.lua", "/lib/fdraw/geo.lua",
-    "/lib/fdraw/versions/release.lua", "/lib/fdraw/versions/debug.lua",
+    "/lib/fdraw/version/release.lua", "/lib/fdraw/version/debug.lua",
     "/lib/fdraw/benchmark/draws.lua", "/lib/fdraw/benchmark/init.lua"
 }
 
@@ -36,8 +36,8 @@ print("Downloading fdraw lib.")
 require("component").gpu.setForeground(0x4e4e78)
 os.execute("mkdir /lib/fdraw")
 print("create /lib/fdraw")
-os.execute("mkdir /lib/fdraw/versions")
-print("create /lib/fdraw/versions")
+os.execute("mkdir /lib/fdraw/version")
+print("create /lib/fdraw/version")
 os.execute("mkdir /lib/fdraw/benchmark")
 print("create /lib/fdraw/benchmark")
 for _, file in pairs(file_list) do
@@ -45,5 +45,5 @@ for _, file in pairs(file_list) do
     print(file .. " conclued!")
 end
 
-require("component").gpu.setForeground(0x0d0d6e)
+require("component").gpu.setForeground(0xAAAAFF)
 print("Fdraw installed with success!")
