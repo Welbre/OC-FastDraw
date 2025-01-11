@@ -40,7 +40,8 @@ function op.bind(addr)
 end
 
 function op.new(width, height)
-    local index = new(width, height)
+    local index, ok = new(width, height)
+    if not index then error(ok, 2) end
     vir_tree[index] = {}
     return index
 end
