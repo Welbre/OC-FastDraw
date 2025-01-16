@@ -167,8 +167,9 @@ function op.display(x, y, width, height, x0, y0)
     bitblt(0, x, y, width, height, selected_buff, x0, y0)
 end
 
-function op.copy(target, x, y, width, height, x0, y0)
-    bitblt(target, x or 1, y or 1, width, height, selected_buff, x0 or 1, y0 or 1)
+---Copy from the #1 arg and paste in the selected buffer
+function op.copy(from, x, y, width, height, x0, y0)
+    bitblt(selected_buff, x or 1, y or 1, width, height, from, x0 or 1, y0 or 1)
 end
 
 local function color_distance(r, g, b, r1, g1, b1)
