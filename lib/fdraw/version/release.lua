@@ -91,6 +91,10 @@ function op.display(x, y, width, height, x0, y0)
     bitblt(0, x or 1, y or 1, width, height, selected_buff, x0 or 1, y0 or 1)
 end
 
+function op.copy(target, x, y, width, height, x0, y0)
+    bitblt(target, x or 1, y or 1, width, height, selected_buff, x0 or 1, y0 or 1)
+end
+
 local function color_distance(r, g, b, r1, g1, b1)
     return (0.2126*((r-r1)^2)) + (0.7152*((g-g1)^2)) + (0.0722*((b-b1)^2))
 end
