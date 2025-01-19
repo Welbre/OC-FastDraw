@@ -30,10 +30,22 @@ local file_list = {
     "/lib/fdraw/benchmark/draws.lua", "/lib/fdraw/benchmark/init.lua"
 }
 
+local gpu = require"component".gpu
+
 require("term").clear()
-require("component").gpu.setForeground(0xAAAAFF)
-print("Downloading fdraw lib.")
-require("component").gpu.setForeground(0x4e4e78)
+gpu.setForeground(0xAAAAFF)
+if require"filesystem".exists("/lib/fdraw") then
+    print("Fdraw detected, starting update!")
+
+    os.execute("rm /lib/fdraw -r")
+    gpu.setForeground(0x4e4e78)
+    print("/lib/fdraw deleted!")
+else
+    print("Downloading fdraw lib.")
+end
+
+gpu.setForeground(0x4e4e78)
+
 os.execute("mkdir /lib/fdraw")
 print("create /lib/fdraw")
 os.execute("mkdir /lib/fdraw/version")
