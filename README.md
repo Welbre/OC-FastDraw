@@ -35,7 +35,9 @@ To use the FastDraw in your project, follow the code below.
 
   local idx = fdraw.new(80, 80) --Create a new gpu and fdraw buffer with 80 x 80 size, the new function returns a index that refer to the new buffer created.
   fdraw.select(idx)  --Selects the idx as current work buffer.
-  fdraw.draw(clear, 0xff00) --draw in the fdraw buffers, useing the "clear" function, and passing 0xff00 as #1 arg.
+  fdraw.draw(clear, 0xff00) --draw in the fdraw buffers, using the "clear" function, and passing 0xff00 as #1 arg.
+  --This value will be used in the clear function,so you can easly customize the function to meet your needs.
+  --Is possible to use the fdraw.set directly drawing without use the fdraw.draw, but keep in mind if some error happen while you are drawing, the traceback will not appear.
   fdraw.flush() --This function draw in the gpu buffer from the fdraw buffers, this is the function that really draw.
   fdraw.display() --Copy the gpu buffer, to the screen buffer.
   fdraw.free(idx) --Free the gpu and fdraw buffers. This is very important, if you forget that, memory leaks will occur.
